@@ -1,4 +1,4 @@
-### Converter Jumba.txt em CSV
+### JumbaPricingPane - Converter Jumba.txt em CSV
 
 - O código fornecido converte um arquivo de texto (jumba.txt) em um arquivo CSV
 
@@ -6,7 +6,7 @@
 python3 csv_script.py
 ```
 
-### Gerar arquivo CSV via JumbaWall.mq5
+### JumbaWall.mq5 - Gerar arquivo CSV via JumbaWall.mq5
 
 - Entre na pasta ```/CSV/c```
 
