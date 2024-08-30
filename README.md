@@ -1,6 +1,6 @@
 ## JumbaWall.mq5
 
-Antes de começar, verifique o arquivo `README.md` localizado na pasta `/C Files`. Este arquivo contém informações importantes e instruções adicionais que podem ser úteis para a configuração e uso do `JumbaWall.mq5`.
+Antes de começar, verifique o arquivo [README.md](https://github.com/hyperFounder/improved-spoon/tree/main/C%20files) localizado na pasta `/C Files`.
 
 ### Passos de Configuração
 
