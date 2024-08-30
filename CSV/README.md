@@ -1,4 +1,4 @@
-### JumbaWall.mq5 CSV arquivo
+### Gerar arquivo CSV via JumbaWall.mq5
 
 - Tenha os arquivos lerArquivo.c e textToCSV.c no mesmo diretório do shell script.
 - Tenha o arquivo de entrada jumba.txt no mesmo diretório.
