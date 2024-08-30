@@ -1,6 +1,9 @@
 ## JumbaWall.mq5
 
-Antes de começar, verifique o arquivo [README.md](https://github.com/hyperFounder/improved-spoon/tree/main/C%20files) localizado na pasta `/C Files`.
+- Antes de começar, verifique o arquivo [README.md](https://github.com/hyperFounder/improved-spoon/tree/main/C%20files) localizado na pasta `/C Files`.
+- https://jumba.com.br/pro/market-gamma
+
+
 
 ### Passos de Configuração
 
