@@ -47,10 +47,10 @@ selected_assets = [
 process_all = input("Deseja processar todos os ativos? (yes/no): ").strip().lower() in ['y', 'yes']
 
 if process_all:
-    output_file = 'FULL_export_jumba.gamma.csv'
+    output_file = 'export_jumba.gamma.csv'
     process_file(input_file, output_file)
 else:
-    output_file = '38_export_jumba.gamma.csv'
+    output_file = 'export_jumba.gamma.csv'
     process_file(input_file, output_file, selected_assets)
 
 print(f'Arquivo CSV gerado: {output_file}')
