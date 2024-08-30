@@ -1,6 +1,6 @@
 ## JumbaWall.mq5
 
-- Antes de começar, gere o arquivo CSV. [README.md](https://github.com/hyperFounder/improved-spoon/tree/main/C%20files).
+- Antes de começar, gere o arquivo CSV. [README.md](https://github.com/hyperFounder/improved-spoon/tree/main/CSV).
 - https://jumba.com.br/pro/market-gamma
 
 
