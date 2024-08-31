@@ -1,16 +1,17 @@
-## JumbaWall.mq5
+## JumbaWall.mq5 e JumbaPricingPanel
 
-- Antes de começar, gere o arquivo CSV via JumbaWall.mq5. [README.md](https://github.com/hyperFounder/improved-spoon/tree/main/CSV).
 - https://jumba.com.br/pro/market-gamma
 - https://www.mql5.com/en/code/46935 - Reading CSV files doc.
 
 
 
-### Passos de Configuração
+### Passos de Configuração - JumbaWall.mq5
 
-1. Coloque o arquivo CSV que você deseja usar na pasta `/MQL5/Files` do seu diretório de dados do MetaTrader.
+1. Antes de começar, gere o arquivo CSV via JumbaWall.mq5. [README.md](https://github.com/hyperFounder/improved-spoon/tree/main/CSV).
 
-2. O código `JumbaWall.mq5` depende da biblioteca `DKSimplestCSVReader.mqh`. Para garantir que o código funcione corretamente, você deve incluir este arquivo na pasta `/MQL5/Include`. 
+2. Coloque o arquivo CSV que você deseja usar na pasta `/MQL5/Files` do seu diretório de dados do MetaTrader.
+
+3. O código `JumbaWall.mq5` depende da biblioteca `DKSimplestCSVReader.mqh`. Para garantir que o código funcione corretamente, você deve incluir este arquivo na pasta `/MQL5/Include`. 
 
 ### Ajuste do Nome do Arquivo no Código
 
