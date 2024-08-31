@@ -6,7 +6,7 @@
 python3 csv_script.py
 ```
 
-### JumbaWall.mq5 - Gerar arquivo CSV via JumbaWall.mq5
+### Passos de Configuração - Gerar arquivo CSV via JumbaWall.mq5
 
 - Entre na pasta ```/CSV/c```
 
