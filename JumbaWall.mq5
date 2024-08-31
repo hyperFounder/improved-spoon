@@ -1,29 +1,26 @@
 #property strict
-
+#property copyright "Copyright 2024, Hamilton"
 #include <DKSimplestCSVReader.mqh>  // Include the CSV reader library
 
 // Define custom colors
-color clWall = clrLime;
-color clMidWall = clrGray;
-color clMidWallFibo = clrDarkGray;
+color clWall = clrAqua;
 color clFlip = clrYellow;
-color clMaxGamma = clrGreen;
+color clMaxGamma = clrLime;
 color clMinGamma = clrRed;
 
 // Structure to hold the data
-struct PlotData
+struct CsvData
 {
-   double value;
-   color lineColor;
+   string symbol;
+   double values[];
 };
-
-// Array to hold the data from the CSV
-PlotData plotData[];
+// Array to store CSV data
+CsvData csvData[];
 
 
 int OnInit() {
    // Path to the CSV file (Make sure the file is in /MQL5/Files)
-   string fileName = "PETR4.csv";
+   string fileName = "export.csv";
    
    // Read the CSV file and populate the plotData array
    if(!ReadCSVFile(fileName)){
@@ -31,10 +28,21 @@ int OnInit() {
       return(INIT_FAILED);
    }
 
-   // Plot the values
-   PlotValues();
+   string symbol = _Symbol; // Get the current chart symbol
+   PlotHorizontalLinesForSymbol(symbol); // Plot the data
    
    return(INIT_SUCCEEDED);
+}
+
+// OnDeinit function to clean up objects
+void OnDeinit(const int reason)
+{
+   for (int i = 0; i < ArraySize(csvData); i++) {
+      for (int j = 0; j < ArraySize(csvData[i].values); j++) {
+         string lineName = StringFormat("ValueLine_%d", j);
+         ObjectDelete(0, lineName);
+      }
+   }
 }
 
 
@@ -45,88 +53,115 @@ bool ReadCSVFile(string fileName){
       PrintFormat("Error reading CSV file or file has no any rows: %s", fileName);
       return(false);
    }
-   
-   PrintFormat("Successfully read %d lines from CSV file with %d columns: %s", 
-               CSVFile.RowCount(),     // Return data lines count without header 
-               CSVFile.ColumnCount(),  // Return columns count from 1st line of the file
-               fileName);
 
-   // Read values from the CSV file and populate plotData array
-   for (int i = 0; i < CSVFile.RowCount(); i++) {
-      double value = StringToDouble(CSVFile.GetValue(i, 0));
-      color lineColor = GetColorFromString(CSVFile.GetValue(i, 1));
-      
-      // Print the read values
-      PrintFormat("Row %d: Value=%f, Color=%s", i, value, CSVFile.GetValue(i, 1));
-      
-      // Add the data to the plotData array
-      PlotData data;
-      data.value = value;
-      data.lineColor = lineColor;
-      ArrayResize(plotData, ArraySize(plotData) + 1);
-      plotData[ArraySize(plotData) - 1] = data;
+   // Allocate space for csvData to handle all rows
+   ArrayResize(csvData, CSVFile.RowCount());
+
+   for (int i =0; i<CSVFile.RowCount(); i++){
+
+      // Get the symbol (first column)
+      string symbol = CSVFile.GetValue(i, 0);
+
+      // Allocate space for values array based on the number of columns
+      ArrayResize(csvData[i].values, CSVFile.ColumnCount() - 1);
+
+      // Set the symbol
+      csvData[i].symbol = symbol;
+
+      // Extract values from the CSV and store them
+      for (int j = 1; j < CSVFile.ColumnCount(); j++) {
+         double value = StringToDouble(CSVFile.GetValue(i, j));
+         csvData[i].values[j - 1] = value;
+      }
+   }
+   return true;
+}
+
+
+// Function to plot horizontal lines on the chart
+void PlotHorizontalLinesForSymbol(string symbol)
+{
+   int index = -1;
+   for (int i = 0; i < ArraySize(csvData); i++) {
+      if (csvData[i].symbol == symbol) {
+         index = i;
+         break;
+      }
    }
 
-   return(true);
-}
+   if (index == -1) {
+      PrintFormat("Symbol %s not found in CSV data", symbol);
+      return;
+   }
 
+   int thirdLast, secondLast, last;
+   GetLastThreeNonZeroIndices(csvData[index].values, thirdLast, secondLast, last);
 
-void PlotValues() {
-   for(int i = 0; i < ArraySize(plotData); i++)
-     {
-      double value = plotData[i].value;
-      color lineColor = plotData[i].lineColor;
+   for (int j = 0; j < ArraySize(csvData[index].values); j++) {
+      string lineName = StringFormat("ValueLine_%d", j);
+      ObjectCreate(0, lineName, OBJ_HLINE, 0, 0, csvData[index].values[j]);
       
-      // Plot the value as a horizontal line
-      ObjectCreate(0, "Line" + IntegerToString(i), OBJ_HLINE, 0, 0, value);
-      ObjectSetInteger(0, "Line" + IntegerToString(i), OBJPROP_COLOR, lineColor);
-      ObjectSetInteger(0, "Line" + IntegerToString(i), OBJPROP_STYLE, STYLE_SOLID);
-      ObjectSetInteger(0, "Line" + IntegerToString(i), OBJPROP_WIDTH, 2);
+      color lineColor;
+
+      if (j == last) {
+         lineColor = clFlip;
+      } else if (j == secondLast) {
+         lineColor = clMinGamma;
+      } else if (j == thirdLast) {
+         lineColor = clMaxGamma;
+      } else {
+         lineColor = clWall;
+      }
+
+      ObjectSetInteger(0, lineName, OBJPROP_COLOR, lineColor);
       
-      // Print where the line was plotted
-      PrintFormat("Plotted line at value: %f with color: %s", value, ColorToString(lineColor));
-     }
-}
-
-string ColorToString(int clr) {
-   if(clr == (int)clWall)
-      return "clWall";
-   if(clr == (int)clMidWall)
-      return "clMidWall";
-   if(clr == (int)clMidWallFibo)
-      return "clMidWallFibo";
-   if(clr == (int)clFlip)
-      return "clFlip";
-   if(clr == (int)clMaxGamma)
-      return "clMaxGamma";
-   if(clr == (int)clMinGamma)
-      return "clMinGamma";
+      // Print where the lines are drawn
+      PrintFormat("Line drawn for %s at %f with color %s", lineName, csvData[index].values[j], ColorToString(lineColor));
+   }
    
-   // Default color if no match is found
-   return "Unknown";
 }
 
-color GetColorFromString(string colorStr) {
-   colorStr = TrimSpaces(colorStr);  // Trim spaces before comparing
-   if(colorStr == "clWall")
-      return(clWall);
-   if(colorStr == "clMidWall")
-      return(clMidWall);
-   if(colorStr == "clMidWallFibo")
-      return(clMidWallFibo);
-   if(colorStr == "clFlip")
-      return(clFlip);
-   if(colorStr == "clMaxGamma")
-      return(clMaxGamma);
-   if(colorStr == "clMinGamma")
-      return(clMinGamma);
-   
-   // Default color if no match is found
-   return(clrBlack);
+// Function to get indices of the last three non-zero values
+void GetLastThreeNonZeroIndices(double &values[], int &thirdLast, int &secondLast, int &last)
+{
+   thirdLast = -1;
+   secondLast = -1;
+   last = -1;
+   int count = 0;
+
+   for (int i = ArraySize(values) - 1; i >= 0; i--)
+   {
+      if (values[i] != 0)
+      {
+         if (count == 0)
+         {
+            last = i;
+         }
+         else if (count == 1)
+         {
+            secondLast = i;
+         }
+         else if (count == 2)
+         {
+            thirdLast = i;
+            break;
+         }
+         count++;
+      }
+   }
 }
 
-string TrimSpaces(string str) {
-    StringTrimLeft(str);
-    StringTrimRight(str);
-    return str;
+// Function to convert color to string representation
+string CustomColorToString(color col)
+{
+   if (col == clFlip) {
+      return "clFlip (Yellow)";
+   } else if (col == clMinGamma) {
+      return "clMinGamma (Red)";
+   } else if (col == clMaxGamma) {
+      return "clMaxGamma (clrLime)";
+   } else if (col == clWall) {
+      return "clWall (clrAqua)";
+   }
+   return "Unknown color";
 }
