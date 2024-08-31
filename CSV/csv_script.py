@@ -16,18 +16,20 @@ def process_file(input_file, output_file, selected_assets=None):
 
     # Encontra todas as seções de ativos e seus valores
     asset_blocks = re.findall(r'if \(GetAsset\(\) = "([^"]+)"\) then begin(.*?)(?=if \(GetAsset|$)', content, re.DOTALL)
-    
+
     rows = []
     for asset, block in asset_blocks:
-        if selected_assets is None or asset in selected_assets:
-            # Extrai e formata os valores das linhas
+        if asset != "JUMBA" and (selected_assets is None or asset in selected_assets):
+            # Extrai e formata os valores das linhas para outros ativos
             values = extract_lines(block)
-            # Adiciona a linha no formato desejado
             rows.append([asset] + values)
 
     # Grava no arquivo CSV
     with open(output_file, 'w', newline='') as csvfile:
         writer = csv.writer(csvfile)
+        # Escreve a linha fixa JUMBA primeiro
+        writer.writerow(['JUMBA', '25.32', '48.77', '12.85', '93.21', '56.64', '78.99', '34.56', '87.41', '29.75', '65.84', '90.12', '14.37', '81.09', '23.47', '62.58', '75.21', '49.36', '88.15', '30.90', '54.79', '77.64', '20.12'])
+        # Escreve as demais linhas
         for row in rows:
             writer.writerow(row)
 
