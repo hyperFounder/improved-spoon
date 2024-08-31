@@ -39,8 +39,8 @@ selected_assets = [
     "ABEV3", "ASAI3", "AZUL4", "B3SA3", "BBAS3", "BBDC4", "BBSE3", "BOVA11", "BPAC11",
     "BRAP4", "BRKM5", "CMIG4", "CMIN3", "CSAN3", "ELET6", "ENGI11", "EQTL3", "GGBR4",
     "HAPV3", "HYPE3", "ITSA4", "ITUB4", "KLBN11", "LREN3", "MGLU3", "PETR4", "RADL3",
-    "RAIZ4", "RENT3", "SBSP3", "SMAL11", "SUZB3", "TAEE11", "USIM5", "VALE3", "VBBR3",
-    "WEGE3", "YDUQ3"
+    "RAIZ4", "RENT3", "SBSP3", "SMAL11", "USIM5", "VALE3", "VBBR3", "WEGE3", "YDUQ3",
+    "SUZB3", "TAEE11"
 ]
 
 # Perguntar ao usuário se deseja processar todos os ativos ou apenas os selecionados
