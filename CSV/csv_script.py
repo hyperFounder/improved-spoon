@@ -1,42 +1,44 @@
 import re
 import csv
 
-# Função para extrair e formatar os valores das linhas de um ativo
+# Function to extract and format the values from the lines of an asset
 def extract_lines(text):
-    # Encontra todos os valores das linhas no texto
+    # Find all values of the lines in the text
     values = re.findall(r'line\d+ := ([\d.]+);', text)
-    # Formata os valores para ter duas casas decimais
+    # Format the values to have two decimal places
     formatted_values = [f"{float(value):.2f}" for value in values]
+    # Replace '0.00' with '0.01'
+    formatted_values = ['0.01' if value == '0.00' else value for value in formatted_values]
     return formatted_values
 
-# Função para processar o arquivo txt e gerar o CSV
+# Function to process the txt file and generate the CSV
 def process_file(input_file, output_file, selected_assets=None):
     with open(input_file, 'r') as file:
         content = file.read()
 
-    # Encontra todas as seções de ativos e seus valores
+    # Find all asset sections and their values
     asset_blocks = re.findall(r'if \(GetAsset\(\) = "([^"]+)"\) then begin(.*?)(?=if \(GetAsset|$)', content, re.DOTALL)
 
     rows = []
     for asset, block in asset_blocks:
         if asset != "JUMBA" and (selected_assets is None or asset in selected_assets):
-            # Extrai e formata os valores das linhas para outros ativos
+            # Extract and format the values of the lines for other assets
             values = extract_lines(block)
             rows.append([asset] + values)
 
-    # Grava no arquivo CSV
+    # Write to the CSV file
     with open(output_file, 'w', newline='') as csvfile:
         writer = csv.writer(csvfile)
-        # Escreve a linha fixa JUMBA primeiro
+        # Write the fixed JUMBA line first
         writer.writerow(['JUMBA', '25.32', '48.77', '12.85', '93.21', '56.64', '78.99', '34.56', '87.41', '29.75', '65.84', '90.12', '14.37', '81.09', '23.47', '62.58', '75.21', '49.36', '88.15', '30.90', '54.79', '77.64'])
-        # Escreve as demais linhas
+        # Write the other lines
         for row in rows:
             writer.writerow(row)
 
-# Nome dos arquivos de entrada
+# Input file name
 input_file = 'jumba.txt'
 
-# Lista de ativos específicos
+# List of specific assets
 selected_assets = [
     "ABEV3", "ASAI3", "AZUL4", "B3SA3", "BBAS3", "BBDC4", "BBSE3", "BOVA11", "BPAC11",
     "BRAP4", "BRKM5", "CMIG4", "CMIN3", "CSAN3", "ELET6", "ENGI11", "EQTL3", "GGBR4",
@@ -45,7 +47,7 @@ selected_assets = [
     "SUZB3", "TAEE11"
 ]
 
-# Perguntar ao usuário se deseja processar todos os ativos ou apenas os selecionados
+# Ask the user if they want to process all assets or only the selected ones
 process_all = input("Deseja processar todos os ativos? (yes/no): ").strip().lower() in ['y', 'yes']
 
 if process_all:
