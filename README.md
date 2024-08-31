@@ -3,9 +3,7 @@
 - https://jumba.com.br/pro/market-gamma
 - https://www.mql5.com/en/code/46935 - Reading CSV files doc.
 
-
-
-### Passos de Configuração - JumbaWall.mq5
+## JumbaWall.mq5 Configuração
 
 1. Antes de começar, gere o arquivo CSV via JumbaWall.mq5. [README.md](https://github.com/hyperFounder/improved-spoon/tree/main/CSV).
 
