@@ -28,7 +28,7 @@ def process_file(input_file, output_file, selected_assets=None):
     with open(output_file, 'w', newline='') as csvfile:
         writer = csv.writer(csvfile)
         # Escreve a linha fixa JUMBA primeiro
-        writer.writerow(['JUMBA', '25.32', '48.77', '12.85', '93.21', '56.64', '78.99', '34.56', '87.41', '29.75', '65.84', '90.12', '14.37', '81.09', '23.47', '62.58', '75.21', '49.36', '88.15', '30.90', '54.79', '77.64', '20.12'])
+        writer.writerow(['JUMBA', '25.32', '48.77', '12.85', '93.21', '56.64', '78.99', '34.56', '87.41', '29.75', '65.84', '90.12', '14.37', '81.09', '23.47', '62.58', '75.21', '49.36', '88.15', '30.90', '54.79', '77.64'])
         # Escreve as demais linhas
         for row in rows:
             writer.writerow(row)
