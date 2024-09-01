@@ -3,7 +3,7 @@
 - https://jumba.com.br/pro/market-gamma
 - Reading CSV files doc - https://www.mql5.com/en/code/46935
 
-![Jumba Pricing Panel](https://github.com/hyperFounder/improved-spoon/blob/main/JumbaPricingPanel.png)
+![Jumba Pricing Panel](https://github.com/hyperFounder/improved-spoon/blob/main/images/jumba.png)
 
 
 ## JumbaPricingPanel.mq5 Configuração
