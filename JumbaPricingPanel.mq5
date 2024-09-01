@@ -12,6 +12,7 @@ input int yMove = 0; // Vertical panel attachment point - 0 fixes the panel at t
 
 // https://www.mql5.com/pt/docs/constants/environment_state/marketinfoconstants
 // input string SymbolsNames = "ABEV3;ASAI3;AZUL4;B3SA3;BBAS3;BBDC4;BBSE3;BOVA11;BPAC11;BRAP4;BRKM5;CMIG4;CMIN3;CSAN3;ELET6;ENGI11;EQTL3;GGBR4;HAPV3;HYPE3;ITSA4;ITUB4;KLBN11;LREN3;MGLU3;PETR4;RADL3;RAIZ4;RENT3;SBSP3;SMAL11;USIM5;VALE3;VBBR3;WEGE3;YDUQ3;SUZB3;TAEE11";
+input double DistanciaAtivo=0.05;               // Default 0.05
 
 input color FontColorName = clrSkyBlue;       // Font color of the symbols name and its values
 input color FontColorPositive = clrLimeGreen; // Font color of positive changes
@@ -210,12 +211,12 @@ void AddAlertedLabel(string labelName)
 //|------------------------------------------------------------------+
 void SetPanel()
 {
-   int uprightPosHeader = 30 + yMove;                     // Upright position for the background and header 21
-   int uprightPosList = 56 + yMove;                       // Upright position for the values list 46
+   int uprightPosHeader = 2 + yMove;                     // Upright position for the background and header 21
+   int uprightPosList = 23 + yMove;                       // Upright position for the values list 46
    int lineHeight = 14;                                   // Line height 19
    int heightBase = 10;                                   // Base panel height 12
    int heightPanel = heightBase + (15 * (nrSymbols + 1)); // Panel height adjusted to number of symbols
-   int widthPanel = 1150;                                 // Width panel 490 - 560
+   int widthPanel = 1180;                                 // Width panel 490 - 560
                                                           //---
    int fontSizeNm = 10;                                   // Font size of Names
    int fontSizeValues = 10;                               // Font size of values
@@ -227,7 +228,7 @@ void SetPanel()
    ENUM_BASE_CORNER corner = CORNER_LEFT_UPPER;
    ENUM_ANCHOR_POINT anchor1 = ANCHOR_LEFT_UPPER;
 
-   int MargenDefault = 75;
+   int MargenDefault = 52;
 
    //--- Margins distance
    int margCol01 = 10;                             // Ativo
@@ -266,7 +267,7 @@ void SetPanel()
 
    desc = TimeToString(TimeLocal(), TIME_DATE);
    //--- Panel header
-   CreateEdit("PanelHeader", "    Mapa JUMBA        Data: " + desc, corner, fontNameTitle, 8, clrWhite, widthPanel, 18, 0, uprightPosHeader, BackgroundTitle, BorderColor);
+   CreateEdit("PanelHeader", "JUMBA GM+(Verde) GM-(Vermelho) FLIP CHECK=" + DistanciaAtivo + " " + desc, corner, fontNameTitle, 8, clrWhite, widthPanel, 18, 0, uprightPosHeader, BackgroundTitle, BorderColor);
 
    //--- List of symbol names and respective values
    for (int i = 0; i < nrSymbols; i++)
@@ -336,8 +337,9 @@ void SetPanel()
             string labelSuffix = CharToString((char)('A' + j));
             string labelName = resultSymbols[i] + labelSuffix;
 
-            // Check if JUMBA value matches closeNow. //if (MathAbs(csvData[i].values[j] - closeNow) <= 0.1)
-            if (csvData[i].values[j] == closeNow)
+            // Check if JUMBA value matches closeNow. 
+            if (MathAbs(csvData[i].values[j] - closeNow) <= DistanciaAtivo)
+            //if (csvData[i].values[j] == closeNow )
             {
                fontColor = FontColorAlert;
                // Check if this alert has not been sent yet
@@ -345,7 +347,7 @@ void SetPanel()
                {
                   string alertMessage = StringFormat("Alert! Label: %s, Price: %s, Percentage Change: %s%%, Value: %s",
                                                      csvData[i].symbol, DoubleToString(closeNow, nrDigts), DoubleToString(varPrc, 2), DoubleToString(csvData[i].values[j], nrDigts));
-                  Alert(alertMessage);
+                  //Alert(alertMessage);
                   AddAlertedLabel(labelName); // Mark this label as alerted
                }
             }
