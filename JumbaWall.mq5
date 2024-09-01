@@ -11,13 +11,15 @@
 #property version   "1.00"
 #property indicator_chart_window
 
+input double DistanciaAtivo=0.05;               // Default 0.05
+
 
 // Define custom colors
 color clWall = clrAqua; // Changed to blue
 color clFlip = clrYellow;
 color clMaxGamma = clrLime;
 color clMinGamma = clrRed;
-input bool ShowAllWallValues = false; // Input parameter to show all ClWall values
+input bool ShowAllWallValues = true; // Input parameter to show all ClWall values
 
 // Structure to hold the data
 struct CsvData
@@ -213,12 +215,25 @@ void CreateInfoPanel(string symbol)
    string text = "Line Information:\n";
    string lineInfo;
 
+   double closeNow = iClose(symbol, PERIOD_M1, 0);     // actual price
+
+   // Display Close line info
+   lineInfo += "Ativo: " + DoubleToString(closeNow, 2) + "\n";
+   ObjectCreate(0, panelName + "_Ativo", OBJ_LABEL, 0, 0, 0);
+   ObjectSetInteger(0, panelName + "_Ativo", OBJPROP_CORNER, CORNER_RIGHT_UPPER);
+   ObjectSetInteger(0, panelName + "_Ativo", OBJPROP_XDISTANCE, 200);
+   ObjectSetInteger(0, panelName + "_Ativo", OBJPROP_YDISTANCE, 40);
+   ObjectSetInteger(0, panelName + "_Ativo", OBJPROP_FONTSIZE, 16);
+   ObjectSetInteger(0, panelName + "_Ativo", OBJPROP_COLOR, clFlip);
+   ObjectSetString(0, panelName + "_Ativo", OBJPROP_TEXT, lineInfo);
+
    // Display Flip line info
+   lineInfo = "";
    if (last >= 0 && csvData[index].values[last] != 0.00) {
       lineInfo += "Flip: " + DoubleToString(csvData[index].values[last], 2) + "\n";
       ObjectCreate(0, panelName + "_Flip", OBJ_LABEL, 0, 0, 0);
-      ObjectSetInteger(0, panelName + "_Flip", OBJPROP_CORNER, CORNER_LEFT_UPPER);
-      ObjectSetInteger(0, panelName + "_Flip", OBJPROP_XDISTANCE, 10);
+      ObjectSetInteger(0, panelName + "_Flip", OBJPROP_CORNER, CORNER_RIGHT_UPPER);
+      ObjectSetInteger(0, panelName + "_Flip", OBJPROP_XDISTANCE, 200);
       ObjectSetInteger(0, panelName + "_Flip", OBJPROP_YDISTANCE, 60);
       ObjectSetInteger(0, panelName + "_Flip", OBJPROP_FONTSIZE, 16);
       ObjectSetInteger(0, panelName + "_Flip", OBJPROP_COLOR, clFlip);
@@ -230,9 +245,9 @@ void CreateInfoPanel(string symbol)
    if (secondLast >= 0 && csvData[index].values[secondLast] != 0.00) {
       lineInfo += "MinGamma: " + DoubleToString(csvData[index].values[secondLast], 2) + "\n";
       ObjectCreate(0, panelName + "_MinGamma", OBJ_LABEL, 0, 0, 0);
-      ObjectSetInteger(0, panelName + "_MinGamma", OBJPROP_CORNER, CORNER_LEFT_UPPER);
-      ObjectSetInteger(0, panelName + "_MinGamma", OBJPROP_XDISTANCE, 10);
-      ObjectSetInteger(0, panelName + "_MinGamma", OBJPROP_YDISTANCE, 75);
+      ObjectSetInteger(0, panelName + "_MinGamma", OBJPROP_CORNER, CORNER_RIGHT_UPPER);
+      ObjectSetInteger(0, panelName + "_MinGamma", OBJPROP_XDISTANCE, 200);
+      ObjectSetInteger(0, panelName + "_MinGamma", OBJPROP_YDISTANCE, 80);
       ObjectSetInteger(0, panelName + "_MinGamma", OBJPROP_FONTSIZE, 16);
       ObjectSetInteger(0, panelName + "_MinGamma", OBJPROP_COLOR, clMinGamma);
       ObjectSetString(0, panelName + "_MinGamma", OBJPROP_TEXT, lineInfo);
@@ -243,9 +258,9 @@ void CreateInfoPanel(string symbol)
    if (thirdLast >= 0 && csvData[index].values[thirdLast] != 0.00) {
       lineInfo += "MaxGamma: " + DoubleToString(csvData[index].values[thirdLast], 2) + "\n";
       ObjectCreate(0, panelName + "_MaxGamma", OBJ_LABEL, 0, 0, 0);
-      ObjectSetInteger(0, panelName + "_MaxGamma", OBJPROP_CORNER, CORNER_LEFT_UPPER);
-      ObjectSetInteger(0, panelName + "_MaxGamma", OBJPROP_XDISTANCE, 10);
-      ObjectSetInteger(0, panelName + "_MaxGamma", OBJPROP_YDISTANCE, 90);
+      ObjectSetInteger(0, panelName + "_MaxGamma", OBJPROP_CORNER, CORNER_RIGHT_UPPER);
+      ObjectSetInteger(0, panelName + "_MaxGamma", OBJPROP_XDISTANCE, 200);
+      ObjectSetInteger(0, panelName + "_MaxGamma", OBJPROP_YDISTANCE, 100);
       ObjectSetInteger(0, panelName + "_MaxGamma", OBJPROP_FONTSIZE, 16);
       ObjectSetInteger(0, panelName + "_MaxGamma", OBJPROP_COLOR, clMaxGamma);
       ObjectSetString(0, panelName + "_MaxGamma", OBJPROP_TEXT, lineInfo);
@@ -253,7 +268,7 @@ void CreateInfoPanel(string symbol)
 
    // Display all ClWall values if requested
    if (ShowAllWallValues) {
-      int yDistance = 120; // Initial distance from the top for ClWall values
+      int yDistance = 130; // Initial distance from the top for ClWall values
 
       for (int i = 0; i < ArraySize(csvData[index].values); i++) {
          if (csvData[index].values[i] != 0.00 && i != last && i != secondLast && i != thirdLast) {
@@ -261,14 +276,23 @@ void CreateInfoPanel(string symbol)
             string wallLineInfo = StringFormat("ClWall_%d: %.2f\n", i + 1, csvData[index].values[i]);
 
             ObjectCreate(0, panelName + "_" + wallLineName, OBJ_LABEL, 0, 0, 0);
-            ObjectSetInteger(0, panelName + "_" + wallLineName, OBJPROP_CORNER, CORNER_LEFT_UPPER);
-            ObjectSetInteger(0, panelName + "_" + wallLineName, OBJPROP_XDISTANCE, 10);
+            ObjectSetInteger(0, panelName + "_" + wallLineName, OBJPROP_CORNER, CORNER_RIGHT_UPPER);
+            ObjectSetInteger(0, panelName + "_" + wallLineName, OBJPROP_XDISTANCE, 200);
             ObjectSetInteger(0, panelName + "_" + wallLineName, OBJPROP_YDISTANCE, yDistance); // Adjust spacing as needed
             ObjectSetInteger(0, panelName + "_" + wallLineName, OBJPROP_FONTSIZE, 12);
-            ObjectSetInteger(0, panelName + "_" + wallLineName, OBJPROP_COLOR, clWall);
+            if (  //csvData[index].values[i] == closeNow )
+                  MathAbs(csvData[index].values[i] - closeNow) <= DistanciaAtivo )
+            {
+               ObjectSetInteger(0, panelName + "_" + wallLineName, OBJPROP_COLOR, clFlip);
+            }
+             else
+            {
+              ObjectSetInteger(0, panelName + "_" + wallLineName, OBJPROP_COLOR, clWall);
+            }
+            
             ObjectSetString(0, panelName + "_" + wallLineName, OBJPROP_TEXT, wallLineInfo);
 
-            yDistance += 15; // Increase spacing for next ClWall value
+            yDistance += 20; // Increase spacing for next ClWall value
          }
       }
    }
