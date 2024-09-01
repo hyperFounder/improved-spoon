@@ -1,13 +1,6 @@
-### JumbaPricingPane 
+#### JumbaWall.mq5
 - O código fornecido converte um arquivo de texto (jumba.txt) em um arquivo CSV
-
-```
-python3 csv_script.py
-```
-
-### JumbaWall.mq5
-- O código fornecido converte um arquivo de texto (jumba.txt) em um arquivo CSV
-- Entre na pasta ```/CSV/c```
+- Entre na pasta ```/CSV```
 
 1. Torne o Script Executável
 ```
