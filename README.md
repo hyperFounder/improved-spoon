@@ -1,7 +1,9 @@
 ## JumbaWall.mq5 e JumbaPricingPanel
 
 - https://jumba.com.br/pro/market-gamma
-- https://www.mql5.com/en/code/46935 - Reading CSV files doc.
+- Reading CSV files doc - https://www.mql5.com/en/code/46935
+
+![Jumba Pricing Panel](https://github.com/hyperFounder/improved-spoon/blob/main/JumbaPricingPanel.png)
 
 ## JumbaWall.mq5 Configuração
 
