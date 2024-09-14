@@ -11,8 +11,7 @@
 #property version   "1.00"
 #property indicator_chart_window
 
-input double DistanciaAtivo=0.05;               // Default 0.05
-
+input double DistanciaAtivo=0.03;               // Default 0.03
 
 // Define custom colors
 color clWall = clrAqua; // Changed to blue
@@ -42,8 +41,35 @@ int OnCalculate(const int rates_total,
                 const int &spread[])
   {
 //--- return value of prev_calculated for next call
+
+  SetPanelAux();
    return(rates_total);
   }
+  
+//+------------------------------------------------------------------+
+//| Setting the panel                                           |
+//|------------------------------------------------------------------+
+void SetPanelAux()
+{
+
+   string panelName = "InfoPanel";
+
+   string text = "Line Information:\n";
+   string lineInfo;
+
+   double closeNow = iClose(_Symbol, PERIOD_M1, 0);     // actual price
+
+   // Display Close line info
+   lineInfo += "Ativo: " + DoubleToString(closeNow, 2) + "\n";
+   ObjectCreate(0, panelName + "_Ativo", OBJ_LABEL, 0, 0, 0);
+   ObjectSetInteger(0, panelName + "_Ativo", OBJPROP_CORNER, CORNER_RIGHT_UPPER);
+   ObjectSetInteger(0, panelName + "_Ativo", OBJPROP_XDISTANCE, 200);
+   ObjectSetInteger(0, panelName + "_Ativo", OBJPROP_YDISTANCE, 40);
+   ObjectSetInteger(0, panelName + "_Ativo", OBJPROP_FONTSIZE, 16);
+   ObjectSetInteger(0, panelName + "_Ativo", OBJPROP_COLOR, clFlip);
+   ObjectSetString(0, panelName + "_Ativo", OBJPROP_TEXT, lineInfo);
+
+}
 
 int OnInit() {
    // Path to the CSV file (Make sure the file is in /MQL5/Files)
@@ -75,6 +101,8 @@ void OnDeinit(const int reason)
       }
    }
    ObjectDelete(0, "InfoPanel");
+   ObjectsDeleteAll(0,0,OBJ_LABEL);
+   ObjectsDeleteAll(0,0,OBJ_HLINE);
 }
 
 bool ReadCSVFile(string fileName){
@@ -216,16 +244,6 @@ void CreateInfoPanel(string symbol)
    string lineInfo;
 
    double closeNow = iClose(symbol, PERIOD_M1, 0);     // actual price
-
-   // Display Close line info
-   lineInfo += "Ativo: " + DoubleToString(closeNow, 2) + "\n";
-   ObjectCreate(0, panelName + "_Ativo", OBJ_LABEL, 0, 0, 0);
-   ObjectSetInteger(0, panelName + "_Ativo", OBJPROP_CORNER, CORNER_RIGHT_UPPER);
-   ObjectSetInteger(0, panelName + "_Ativo", OBJPROP_XDISTANCE, 200);
-   ObjectSetInteger(0, panelName + "_Ativo", OBJPROP_YDISTANCE, 40);
-   ObjectSetInteger(0, panelName + "_Ativo", OBJPROP_FONTSIZE, 16);
-   ObjectSetInteger(0, panelName + "_Ativo", OBJPROP_COLOR, clFlip);
-   ObjectSetString(0, panelName + "_Ativo", OBJPROP_TEXT, lineInfo);
 
    // Display Flip line info
    lineInfo = "";
