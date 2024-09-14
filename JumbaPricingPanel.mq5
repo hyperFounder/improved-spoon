@@ -12,7 +12,7 @@ input int yMove = 0; // Vertical panel attachment point - 0 fixes the panel at t
 
 // https://www.mql5.com/pt/docs/constants/environment_state/marketinfoconstants
 // input string SymbolsNames = "ABEV3;ASAI3;AZUL4;B3SA3;BBAS3;BBDC4;BBSE3;BOVA11;BPAC11;BRAP4;BRKM5;CMIG4;CMIN3;CSAN3;ELET6;ENGI11;EQTL3;GGBR4;HAPV3;HYPE3;ITSA4;ITUB4;KLBN11;LREN3;MGLU3;PETR4;RADL3;RAIZ4;RENT3;SBSP3;SMAL11;USIM5;VALE3;VBBR3;WEGE3;YDUQ3;SUZB3;TAEE11";
-input double DistanciaAtivo=0.05;               // Default 0.05
+input double DistanciaAtivo=0.03;               // Default 0.05
 
 input color FontColorName = clrSkyBlue;       // Font color of the symbols name and its values
 input color FontColorPositive = clrLimeGreen; // Font color of positive changes
@@ -216,7 +216,7 @@ void SetPanel()
    int lineHeight = 14;                                   // Line height 19
    int heightBase = 10;                                   // Base panel height 12
    int heightPanel = heightBase + (15 * (nrSymbols + 1)); // Panel height adjusted to number of symbols
-   int widthPanel = 1180;                                 // Width panel 490 - 560
+   int widthPanel = 1120;                                 // Width panel 490 - 560
                                                           //---
    int fontSizeNm = 10;                                   // Font size of Names
    int fontSizeValues = 10;                               // Font size of values
@@ -231,9 +231,9 @@ void SetPanel()
    int MargenDefault = 52;
 
    //--- Margins distance
-   int margCol01 = 10;                             // Ativo
+   int margCol01 = 13;                             // Ativo
    int margCol02 = margCol01 + MargenDefault;      // Preco
-   int margCol021 = margCol02 + MargenDefault - 5; // %variacao
+   int margCol021 = margCol02 + MargenDefault + 15; // %variacao
    int margCol03 = margCol021 + MargenDefault;     // Line1
    int margCol04 = margCol03 + MargenDefault;      // Line2
    int margCol05 = margCol04 + MargenDefault;      // Line3
@@ -267,7 +267,7 @@ void SetPanel()
 
    desc = TimeToString(TimeLocal(), TIME_DATE);
    //--- Panel header
-   CreateEdit("PanelHeader", "JUMBA GM+(Verde) GM-(Vermelho) FLIP CHECK=" + DistanciaAtivo + " " + desc, corner, fontNameTitle, 8, clrWhite, widthPanel, 18, 0, uprightPosHeader, BackgroundTitle, BorderColor);
+   CreateEdit("PanelHeader", "  JUMBA GM+(Verde) GM-(Vermelho) FLIP CHECK=" + DistanciaAtivo + " " + desc, corner, fontNameTitle, 8, clrWhite, widthPanel, 18, 0, uprightPosHeader, BackgroundTitle, BorderColor);
 
    //--- List of symbol names and respective values
    for (int i = 0; i < nrSymbols; i++)
@@ -276,8 +276,8 @@ void SetPanel()
       char nrDigts;
       symb = resultSymbols[i];
 
-      if (resultSymbols[i] == "IBOV")
-         nrDigts = 0;
+      if (resultSymbols[i] == "IBOV" )
+         nrDigts = 2;
       else
          nrDigts = 2; // IBOV is the index of the São Paulo stock exchange. As the number is quite large, it omits the decimals.
 
@@ -394,6 +394,12 @@ void DeletePanel()
       DeleteObjectByName(resultSymbols[i] + "T");
    }
    //---
+   
+   ObjectDelete(0, "PanelBackground");
+   ObjectDelete(0, "PanelHeader");
+   ObjectsDeleteAll(0,0,OBJ_LABEL);
+   ObjectsDeleteAll(0,0,OBJ_HLINE);
+   ObjectsDeleteAll(0,0,OBJ_EDIT);
    ChartRedraw();
 }
 //+------------------------------------------------------------------+
@@ -481,8 +487,12 @@ void DeleteObjectByName(string name)
 //+------------------------------------------------------------------+
 void GetSymbols()
 {
-
    ArrayResize(resultSymbols, nrSymbols);
+   
+   //resultSymbols[0]="IBOV";               //Defines array position 0 as IBOV
+   //resultSymbols[1]="IND$";              //Defines array position 1 as current symbol
+
+
    for (int j = 0; j < nrSymbols; j++) // Defines other positions of the array
    {
       resultSymbols[j] = csvData[j].symbol;
