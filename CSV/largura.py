@@ -1,70 +1,77 @@
 import re
-import sys
+import csv
 
-def find_assets_by_width(filename, min_width, show_lines=False):
-    assets = {}  # Dicionário para armazenar ativos e suas larguras de linha
-    current_asset = None  # Rastreamento do nome do ativo atual
+# Função para extrair e formatar os valores das linhas de um ativo
+def extract_lines(text):
+    # Encontrar todos os valores das linhas no texto
+    values = re.findall(r'line\d+ := ([\d.]+);', text)
+    # Formatando os valores para ter duas casas decimais
+    formatted_values = [f"{float(value):.2f}" for value in values]
+    # Substituir '0.00' por '0.01'
+    formatted_values = ['0.01' if value == '0.00' else value for value in formatted_values]
+    return formatted_values
 
-    # Expressões regulares para análise
-    asset_pattern = re.compile(r'if \(GetAsset\(\) = "([^"]+)"\)')
-    width_pattern = re.compile(r'line(\d+)Width := (\d+);')
+# Função para verificar se alguma largura de linha é maior ou igual a um valor especificado
+def check_min_width(line_widths, min_width):
+    return any(width >= min_width for width in line_widths)
 
-    # Lê o arquivo linha por linha, rastreando o número da linha se necessário
-    with open(filename, 'r') as file:
-        for line_num, line in enumerate(file, start=1):
-            # Verifica se a linha define um ativo
-            asset_match = asset_pattern.search(line)
-            if asset_match:
-                current_asset = asset_match.group(1)
-                assets[current_asset] = []
+# Função para processar o arquivo txt e gerar o CSV
+def process_file(input_file, output_file, min_width=None):
+    with open(input_file, 'r') as file:
+        content = file.read()
 
-            # Verifica se a linha define uma largura
-            width_match = width_pattern.search(line)
-            if width_match and current_asset is not None:
-                if show_lines:
-                    # Inclui o número da linha e a largura se `show_lines` for verdadeiro
-                    width_value = int(width_match.group(2))
-                    assets[current_asset].append((line_num, width_value))
-                else:
-                    # Apenas armazena a largura se `show_lines` for falso
-                    width_value = int(width_match.group(2))
-                    assets[current_asset].append(width_value)
+    # Encontrar todas as seções de ativos e seus valores
+    asset_blocks = re.findall(r'if \(GetAsset\(\) = "([^"]+)"\) then begin(.*?)(?=if \(GetAsset|$)', content, re.DOTALL)
 
-    # Filtra ativos com base na largura mínima exigida
-    if show_lines:
-        matching_assets = {
-            asset: [(line_num, width) for line_num, width in widths if width >= min_width]
-            for asset, widths in assets.items() if any(width >= min_width for _, width in widths)
-        }
+    rows = []
+    asset_count = 0
+    valid_asset_count = 0  # Contador de ativos válidos (que atendem ao critério de largura)
+    total_assets = len(asset_blocks)  # Contar o número total de ativos
+
+    for asset, block in asset_blocks:
+        if asset != "JUMBA":
+            # Extrair as larguras das linhas do bloco
+            line_widths = [int(width) for width in re.findall(r'line\d+Width := (\d+);', block)]
+            
+            # Se houver um filtro de largura mínima, aplique-o
+            if min_width is None or check_min_width(line_widths, min_width):
+                values = extract_lines(block)
+                rows.append([asset] + values)
+                asset_count += 1
+                valid_asset_count += 1  # Conta o ativo que atende ao critério
+
+    # Escrever no arquivo CSV
+    with open(output_file, 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        # Escrever o cabeçalho
+        writer.writerow(['JUMBA', '25.32', '48.77', '12.85', '93.21', '56.64', '78.99', '34.56', '87.41', '29.75', '65.84', '90.12', '14.37', '81.09', '23.47', '62.58', '75.21', '49.36', '88.15', '30.90', '54.79', '77.64'])
+        
+        # Escrever todas as linhas que atendem ao critério
+        for row in rows:
+            writer.writerow(row)
+
+    # Calcular a porcentagem de ativos com largura maior ou igual ao critério
+    if total_assets > 0:
+        percentage = (valid_asset_count / total_assets) * 100
     else:
-        matching_assets = [
-            asset for asset, widths in assets.items() if any(width >= min_width for width in widths)
-        ]
+        percentage = 0
 
-    return matching_assets
+    return asset_count, total_assets, valid_asset_count, percentage
 
-# Exemplo de uso:
-if __name__ == "__main__":
-    # Verifica os argumentos de entrada
-    if len(sys.argv) < 2:
-        print("Uso: python find_assets.py <min_width> [--show-lines]")
-        sys.exit(1)
+# Nome do arquivo de entrada
+input_file = 'jumba.txt'
 
-    # Nome do arquivo definido no código
-    filename = "jumba.txt"
-    min_width = int(sys.argv[1])
-    
-    # Verifica se o usuário solicitou para mostrar as linhas
-    show_lines = '--show-lines' in sys.argv
+# Obter a largura mínima do input do usuário
+min_width = int(input("Digite a largura mínima (por exemplo, 4): ").strip())
 
-    result = find_assets_by_width(filename, min_width, show_lines)
+# Especificar o arquivo de saída
+output_file = 'largura.csv'
 
-    # Exibe o resultado com ou sem linhas
-    if show_lines:
-        print("Ativos com largura maior ou igual a {} e linhas correspondentes:".format(min_width))
-        for asset, matches in result.items():
-            print(f"Ativo: {asset}")
-            for line_num, width in matches:
-                print(f"  - Largura: {width} encontrada na linha {line_num}")
-    else:
-        print("Ativos com largura maior ou igual a {}: {}".format(min_width, result))
+# Processar o arquivo e gerar o CSV
+asset_count, total_assets, valid_asset_count, percentage = process_file(input_file, output_file, min_width)
+
+# Exibir o resultado
+print(f'Arquivo CSV gerado: {output_file}')
+print(f'Número total de ativos: {total_assets}')
+print(f'Número de ativos com largura >= {min_width}: {valid_asset_count}')
+print(f'Porcentagem de ativos com largura >= {min_width}: {percentage:.2f}%')
