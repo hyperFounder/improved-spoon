@@ -1,5 +1,6 @@
 import subprocess
 import csv
+import os
 
 # Etapa 1: Executar o script largura.py para gerar o arquivo largura.csv
 def executar_largura_py():
@@ -29,6 +30,13 @@ def modificar_largura_csv():
             escritor.writerows(linhas)
 
         print("O arquivo export.csv foi criado com os valores modificados.")
+
+        # Apagar o arquivo largura.csv após gerar o export.csv
+        if os.path.exists('largura.csv'):
+            os.remove('largura.csv')
+            print("O arquivo largura.csv foi excluído com sucesso.")
+        else:
+            print("O arquivo largura.csv não foi encontrado para excluir.")
 
     except FileNotFoundError:
         print("O arquivo 'largura.csv' não foi encontrado. Por favor, certifique-se de que o largura.py foi executado com sucesso.")
