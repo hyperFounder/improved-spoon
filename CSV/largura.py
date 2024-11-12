@@ -1,77 +1,100 @@
 import re
 import csv
 
-# Função para extrair e formatar os valores das linhas de um ativo
-def extract_lines(text):
-    # Encontrar todos os valores das linhas no texto
-    values = re.findall(r'line\d+ := ([\d.]+);', text)
-    # Formatando os valores para ter duas casas decimais
-    formatted_values = [f"{float(value):.2f}" for value in values]
-    # Substituir '0.00' por '0.01'
-    formatted_values = ['0.01' if value == '0.00' else value for value in formatted_values]
-    return formatted_values
+# Função para extrair e formatar os valores das linhas de um ativo, incluindo larguras, se solicitado
+def extrair_linhas_com_larguras(bloco, incluir_largura=False):
+    # Extrair valores das linhas
+    valores = re.findall(r'line(\d+) := ([\d.]+);', bloco)
+    # Extrair larguras das linhas
+    larguras = dict(re.findall(r'line(\d+)Width := (\d+);', bloco))
 
-# Função para verificar se alguma largura de linha é maior ou igual a um valor especificado
-def check_min_width(line_widths, min_width):
-    return any(width >= min_width for width in line_widths)
+    # Formatar valores como tuplas (valor, largura), ou apenas valores se incluir_largura for False
+    valores_formatados = []
+    for numero_linha, valor in valores:
+        largura = larguras.get(numero_linha)  # Obter a largura, se disponível
+        # Formatar a tupla com o valor e largura como float e inteiro, se incluir_largura é True e largura existe
+        if incluir_largura and largura:
+            valores_formatados.append((f"{float(valor):.2f}", int(largura)))
+        else:
+            valores_formatados.append(f"{float(valor):.2f}")
+
+    return valores_formatados
 
 # Função para processar o arquivo txt e gerar o CSV
-def process_file(input_file, output_file, min_width=None):
-    with open(input_file, 'r') as file:
-        content = file.read()
+def processar_arquivo(arquivo_entrada, arquivo_saida, ativos_selecionados=None, largura_min=None, correspondencia_exata=False):
+    with open(arquivo_entrada, 'r') as file:
+        conteudo = file.read()
 
     # Encontrar todas as seções de ativos e seus valores
-    asset_blocks = re.findall(r'if \(GetAsset\(\) = "([^"]+)"\) then begin(.*?)(?=if \(GetAsset|$)', content, re.DOTALL)
+    blocos_ativos = re.findall(r'if \(GetAsset\(\) = "([^"]+)"\) then begin(.*?)(?=if \(GetAsset|$)', conteudo, re.DOTALL)
 
-    rows = []
-    asset_count = 0
-    valid_asset_count = 0  # Contador de ativos válidos (que atendem ao critério de largura)
-    total_assets = len(asset_blocks)  # Contar o número total de ativos
+    linhas = []
+    total_ativos = 0
+    ativos_com_largura_min = 0
 
-    for asset, block in asset_blocks:
-        if asset != "JUMBA":
-            # Extrair as larguras das linhas do bloco
-            line_widths = [int(width) for width in re.findall(r'line\d+Width := (\d+);', block)]
+    for ativo, bloco in blocos_ativos:
+        if ativo != "JUMBA" and (ativos_selecionados is None or ativo in ativos_selecionados):
+            total_ativos += 1
+
+            # Extrair larguras de linha do bloco
+            larguras_linhas = [int(largura) for largura in re.findall(r'line\d+Width := (\d+);', bloco)]
             
-            # Se houver um filtro de largura mínima, aplique-o
-            if min_width is None or check_min_width(line_widths, min_width):
-                values = extract_lines(block)
-                rows.append([asset] + values)
-                asset_count += 1
-                valid_asset_count += 1  # Conta o ativo que atende ao critério
+            # Verificar se o ativo atende ao critério de largura mínima com base na escolha do usuário
+            if largura_min is None or (
+                correspondencia_exata and any(largura == largura_min for largura in larguras_linhas)
+            ) or (
+                not correspondencia_exata and any(largura >= largura_min for largura in larguras_linhas)
+            ):
+                ativos_com_largura_min += 1
+                # Incluir largura nas tuplas se largura_min for especificado
+                valores_com_larguras = extrair_linhas_com_larguras(bloco, incluir_largura=(largura_min is not None))
+                linhas.append([ativo] + valores_com_larguras)
 
     # Escrever no arquivo CSV
-    with open(output_file, 'w', newline='') as csvfile:
-        writer = csv.writer(csvfile)
-        # Escrever o cabeçalho
-        writer.writerow(['JUMBA', '25.32', '48.77', '12.85', '93.21', '56.64', '78.99', '34.56', '87.41', '29.75', '65.84', '90.12', '14.37', '81.09', '23.47', '62.58', '75.21', '49.36', '88.15', '30.90', '54.79', '77.64'])
-        
-        # Escrever todas as linhas que atendem ao critério
-        for row in rows:
-            writer.writerow(row)
+    with open(arquivo_saida, 'w', newline='') as csvfile:
+        escritor = csv.writer(csvfile)
+        # Escrever um cabeçalho com nomes de linha (assumindo um máximo de 20 linhas para exemplo)
+        escritor.writerow(['Ativo'] + [f'Linha{i+1}' for i in range(20)])
+        # Escrever as linhas de dados dos ativos
+        for linha in linhas:
+            escritor.writerow(linha)
 
-    # Calcular a porcentagem de ativos com largura maior ou igual ao critério
-    if total_assets > 0:
-        percentage = (valid_asset_count / total_assets) * 100
-    else:
-        percentage = 0
+    # Imprimir informações de resumo
+    print(f'Número total de ativos: {total_ativos}')
+    
+    # Somente exibir a contagem e porcentagem de largura mínima se o critério foi definido
+    if largura_min is not None:
+        porcentagem_largura_min = (ativos_com_largura_min / total_ativos) * 100 if total_ativos > 0 else 0
+        print(f'Número de ativos com largura {"=" if correspondencia_exata else ">="} {largura_min}: {ativos_com_largura_min}')
+        print(f'Porcentagem de ativos com largura {"=" if correspondencia_exata else ">="} {largura_min}: {porcentagem_largura_min:.2f}%')
 
-    return asset_count, total_assets, valid_asset_count, percentage
+# Arquivo de entrada
+arquivo_entrada = 'jumba.txt'
 
-# Nome do arquivo de entrada
-input_file = 'jumba.txt'
+# Lista de ativos específicos
+ativos_selecionados = [
+    "ABEV3", "ASAI3", "AZUL4", "B3SA3", "BBAS3", "BBDC4", "BBSE3", "BOVA11", "BPAC11",
+    "BRAP4", "BRKM5", "CMIG4", "CMIN3", "CSAN3", "ELET6", "ENGI11", "EQTL3", "GGBR4",
+    "HAPV3", "HYPE3", "ITSA4", "ITUB4", "KLBN11", "LREN3", "MGLU3", "PETR4", "RADL3",
+    "RAIZ4", "RENT3", "SBSP3", "SMAL11", "USIM5", "VALE3", "VBBR3", "WEGE3", "YDUQ3",
+    "SUZB3", "TAEE11"
+]
 
-# Obter a largura mínima do input do usuário
-min_width = int(input("Digite a largura mínima (por exemplo, 4): ").strip())
+# Perguntar ao usuário se deseja processar todos os ativos ou apenas os selecionados
+processar_todos = input("Deseja processar todos os ativos? (yes/no): ").strip().lower() in ['y', 'yes']
 
-# Especificar o arquivo de saída
-output_file = 'largura.csv'
+# Perguntar ao usuário se deseja aplicar largura mínima
+usar_largura_min = input("Deseja aplicar uma largura mínima? (yes/no): ").strip().lower() in ['y', 'yes']
 
-# Processar o arquivo e gerar o CSV
-asset_count, total_assets, valid_asset_count, percentage = process_file(input_file, output_file, min_width)
+if usar_largura_min:
+    largura_min = int(input("Digite a largura mínima (por exemplo, 4): ").strip())
+    correspondencia_exata = input("Deseja encontrar o número de ativos com largura exatamente igual a largura mínima? (yes/no): ").strip().lower() in ['y', 'yes']
+else:
+    largura_min = None
+    correspondencia_exata = False
 
-# Exibir o resultado
-print(f'Arquivo CSV gerado: {output_file}')
-print(f'Número total de ativos: {total_assets}')
-print(f'Número de ativos com largura >= {min_width}: {valid_asset_count}')
-print(f'Porcentagem de ativos com largura >= {min_width}: {percentage:.2f}%')
+# Definir o arquivo de saída
+arquivo_saida = 'largura.csv'
+processar_arquivo(arquivo_entrada, arquivo_saida, ativos_selecionados if not processar_todos else None, largura_min, correspondencia_exata)
+
+print(f'Arquivo CSV gerado: {arquivo_saida}')
