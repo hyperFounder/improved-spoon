@@ -48,7 +48,7 @@ selected_assets = [
 ]
 
 # Ask the user if they want to process all assets or only the selected ones
-process_all = input("Deseja processar todos os ativos? (yes/no): ").strip().lower() in ['y', 'yes']
+process_all = input("Deseja processar todos os ativos? (sim/não): ").strip().lower() in ['s', 'sim']
 
 if process_all:
     output_file = 'export.csv'
