@@ -2,7 +2,7 @@ import subprocess
 import csv
 import os
 
-# Etapa 1: Executar o script largura.py para gerar o arquivo largura.csv
+# Função para executar o script largura.py para gerar o arquivo largura.csv
 def executar_largura_py():
     try:
         # Executar o script largura.py usando subprocess
@@ -10,6 +10,16 @@ def executar_largura_py():
         print("largura.py executado com sucesso.")
     except subprocess.CalledProcessError as e:
         print(f"Erro ao executar o largura.py: {e}")
+        exit(1)
+
+# Função para executar o script csv_script.py no diretório Old files
+def executar_csv_script_py():
+    try:
+        # Executar o script csv_script.py usando subprocess
+        subprocess.run(['python3', 'Old files/csv_script.py'], check=True)
+        print("csv_script.py executado com sucesso.")
+    except subprocess.CalledProcessError as e:
+        print(f"Erro ao executar o csv_script.py: {e}")
         exit(1)
 
 # Etapa 2: Ler o arquivo largura.csv, substituir 0.00 por 0.01
@@ -47,11 +57,16 @@ def modificar_largura_csv():
 
 # Função principal para orquestrar as etapas
 def principal():
-    # Executar o script largura.py
-    executar_largura_py()
+    # Perguntar ao usuário se deseja aplicar largura
+    aplicar_largura = input("Deseja aplicar o filtro de largura exata? (sim/não): ").strip().lower()
 
-    # Modificar o largura.csv e salvar no export.csv
-    modificar_largura_csv()
+    # Verificar resposta do usuário e executar o script correspondente
+    if aplicar_largura in ['sim', 's']:
+        executar_largura_py()
+        # Modificar o largura.csv e salvar no export.csv
+        modificar_largura_csv()
+    else:
+        executar_csv_script_py()
 
 # Executar a função principal
 if __name__ == "__main__":
